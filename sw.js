@@ -1,4 +1,4 @@
-const CACHE = 'reboque-v4';
+const CACHE = 'reboque-v5';
 
 const ARQUIVOS = [
   './',

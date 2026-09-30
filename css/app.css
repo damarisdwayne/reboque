@@ -125,6 +125,7 @@ body {
 .mes__topo h2 { margin: 0; font-size: 1.05rem; }
 .mes__topo strong { flex: none; font-size: 1.05rem; }
 .mes__etiqueta { margin: .1rem 0 0; font-size: .84rem; font-weight: 600; color: var(--tinta-fraca); }
+.mes__avulsos { margin: 1rem .2rem .5rem; font-size: .9rem; color: var(--tinta-fraca); }
 .mes--cobrar .mes__etiqueta { color: var(--ok); }
 .mes--atrasado .mes__etiqueta { color: var(--alerta); }
 

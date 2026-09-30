@@ -46,8 +46,15 @@ const ETIQUETAS = {
   atrasado: (mes) => `Atrasado · era para receber em ${nomeMes(mesDeReceber(mes))}`,
 };
 
+function avulsos(servicos) {
+  if (!servicos.length) return '';
+  return `<h3 class="mes__avulsos">Sem empresa</h3>
+    <ul class="servicos servicos--solto">${servicos.map((s) => linhaServico(s, false)).join('')}</ul>`;
+}
+
 function blocoMes([mes, servicos]) {
   const situacao = situacaoDoMes(mes);
+  const comEmpresa = servicos.filter((s) => empresaDe(s));
   return `<section class="mes mes--${situacao}">
     <header class="mes__topo">
       <div>
@@ -56,7 +63,8 @@ function blocoMes([mes, servicos]) {
       </div>
       <strong>${brl(somar(servicos))}</strong>
     </header>
-    ${agruparPorEmpresa(servicos).map((grupo) => cartaoEmpresa(mes, grupo)).join('')}
+    ${agruparPorEmpresa(comEmpresa).map((grupo) => cartaoEmpresa(mes, grupo)).join('')}
+    ${avulsos(servicos.filter((s) => !empresaDe(s)))}
   </section>`;
 }
 

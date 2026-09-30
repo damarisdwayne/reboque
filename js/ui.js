@@ -115,10 +115,10 @@ const acoes = {
   'receber-tudo': ({ empresa, mes }) => {
     const lista = servicosDaEmpresa(empresa, mes);
     const total = `${lista.length} ${lista.length === 1 ? 'serviço' : 'serviços'} de ${nomeMes(mes)}, ${brl(somar(lista))} ao todo`;
-    if (!confirm(empresa ? `${empresa} pagou ${total}?` : `Recebeu ${total} sem empresa?`)) return;
+    if (!confirm(`${empresa} pagou ${total}?`)) return;
     marcarRecebido(lista.map((s) => s.id), true);
     render();
-    avisar(`${empresa || 'Serviços sem empresa'} · ${nomeMes(mes)} recebido.`);
+    avisar(`${empresa} · ${nomeMes(mes)} recebido.`);
   },
   excluir: ({ id }) => {
     const s = acharServico(id);
