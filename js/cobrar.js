@@ -1,4 +1,4 @@
-const chaveEmpresa = (nome) => `empresa:${nome}`;
+const chaveEmpresa = (mes, nome) => `empresa:${mes}:${nome}`;
 
 function linhaServico(s, recebido) {
   return `<li class="servico">
@@ -15,32 +15,49 @@ function linhaServico(s, recebido) {
   </li>`;
 }
 
-function cartaoEmpresa([nome, servicos]) {
-  const aberta = abertos.has(chaveEmpresa(nome));
-  const antigo = servicos[0];
-  const dias = diasEntre(antigo.data, hoje());
+function cartaoEmpresa(mes, [nome, servicos]) {
+  const aberta = abertos.has(chaveEmpresa(mes, nome));
+  const dados = `data-empresa="${esc(nome)}" data-mes="${mes}"`;
 
   return `<article class="cartao">
     <header class="cartao__topo">
       <div>
         <h3>🏢 ${esc(nomeEmpresa(nome))}</h3>
-        <p class="cartao__sub">${servicos.length} ${servicos.length === 1 ? 'serviço' : 'serviços'} · mais antigo em ${dataBR(antigo.data)}</p>
+        <p class="cartao__sub">${servicos.length} ${servicos.length === 1 ? 'serviço' : 'serviços'}</p>
       </div>
       <strong class="cartao__total">${brl(somar(servicos))}</strong>
     </header>
 
-    ${dias > 30 ? `<p class="cartao__alerta">⏳ Tem serviço esperando há ${dias} dias</p>` : ''}
-
     <div class="cartao__acoes">
-      <button type="button" class="btn btn--zap" data-acao="cobrar" data-empresa="${esc(nome)}">Cobrar no WhatsApp</button>
-      <button type="button" class="btn btn--fantasma" data-acao="detalhar" data-empresa="${esc(nome)}">${aberta ? 'Esconder' : 'Ver serviços'}</button>
+      <button type="button" class="btn btn--fantasma" data-acao="detalhar" ${dados}>${aberta ? 'Esconder' : 'Ver serviços'}</button>
+      ${aberta ? '' : `<button type="button" class="btn btn--principal" data-acao="receber-tudo" ${dados}>Recebi</button>`}
     </div>
 
     ${aberta ? `<ul class="servicos">${servicos.map((s) => linhaServico(s, false)).join('')}</ul>
       <div class="cartao__acoes">
-        <button type="button" class="btn btn--principal" data-acao="receber-tudo" data-empresa="${esc(nome)}">Recebi tudo (${brl(somar(servicos))})</button>
+        <button type="button" class="btn btn--principal" data-acao="receber-tudo" ${dados}>Recebi tudo (${brl(somar(servicos))})</button>
       </div>` : ''}
   </article>`;
+}
+
+const ETIQUETAS = {
+  andamento: (mes) => `Mês atual · receber em ${nomeMes(mesDeReceber(mes))}`,
+  cobrar: (mes) => `Receber agora, em ${nomeMes(mesDeReceber(mes))}`,
+  atrasado: (mes) => `Atrasado · era para receber em ${nomeMes(mesDeReceber(mes))}`,
+};
+
+function blocoMes([mes, servicos]) {
+  const situacao = situacaoDoMes(mes);
+  return `<section class="mes mes--${situacao}">
+    <header class="mes__topo">
+      <div>
+        <h2>Trabalho de ${esc(nomeMes(mes))}</h2>
+        <p class="mes__etiqueta">${ETIQUETAS[situacao](mes)}</p>
+      </div>
+      <strong>${brl(somar(servicos))}</strong>
+    </header>
+    ${agruparPorEmpresa(servicos).map((grupo) => cartaoEmpresa(mes, grupo)).join('')}
+  </section>`;
 }
 
 function bannerRecemSalvo() {
@@ -59,22 +76,23 @@ function bannerRecemSalvo() {
 
 function telaCobrar() {
   const lista = aCobrar();
-  const grupos = agruparPorEmpresa(lista);
-  const mes = somar(doMes(DB.servicos));
+  const agora = paraReceberAgora(lista);
+  const atual = mesAtual();
   return `
     ${bannerRecemSalvo()}
     ${backupAtrasado() ? `<button type="button" class="lembrete" data-acao="ir-backup">
       💾 ${textoLembrete()} Toque aqui para salvar.
     </button>` : ''}
     <div class="resumo">
-      <small>Falta receber</small>
-      <strong>${brl(somar(lista))}</strong>
-      <span>${lista.length} ${lista.length === 1 ? 'serviço' : 'serviços'} de ${grupos.length} ${grupos.length === 1 ? 'empresa' : 'empresas'}</span>
+      <small>Para receber em ${esc(nomeMes(atual))}</small>
+      <strong>${brl(somar(agora))}</strong>
+      <span>${agora.length} ${agora.length === 1 ? 'serviço' : 'serviços'} de meses anteriores</span>
       <div class="resumo__linha">
-        <div><small>Trabalhou em ${esc(nomeDoMes())}</small><b>${brl(mes)}</b></div>
+        <div><small>Trabalhou em ${esc(nomeMes(atual))}</small><b>${brl(somar(doMes(DB.servicos)))}</b></div>
+        <div><small>Falta receber ao todo</small><b>${brl(somar(lista))}</b></div>
       </div>
     </div>
-    ${grupos.length
-      ? grupos.map(cartaoEmpresa).join('')
-      : vazio('🚚', 'Nada para cobrar', 'Toque em “Novo serviço” lá embaixo para anotar o primeiro.')}`;
+    ${lista.length
+      ? agruparPorMes(lista).map(blocoMes).join('')
+      : vazio('🚚', 'Nada para receber', 'Toque em “Novo serviço” lá embaixo para anotar o primeiro.')}`;
 }

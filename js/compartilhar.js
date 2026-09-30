@@ -5,16 +5,6 @@ const linkWhatsApp = (texto) => `https://wa.me/?text=${encodeURIComponent(texto)
 const linhaCobranca = (s) =>
   `• ${dataBR(s.data)} — ${s.tipo}${s.obs ? ` (${s.obs})` : ''}: ${brl(s.valor)}`;
 
-function textoCobranca(nome, servicos) {
-  return [
-    nome ? `Olá! Segue a relação dos serviços prestados para *${nome}*:` : 'Olá! Segue a relação dos serviços prestados:',
-    '',
-    ...servicos.map(linhaCobranca),
-    '',
-    `*Total: ${brl(somar(servicos))}*`,
-  ].join('\n');
-}
-
 function relatorioTexto() {
   const lista = aCobrar();
   const linhas = [`🚚 *Serviços a receber* — ${dataBR(hoje())}`, ''];
@@ -25,9 +15,12 @@ function relatorioTexto() {
   }
 
   linhas.push(`*Total: ${brl(somar(lista))}*`, '');
-  agruparPorEmpresa(lista).forEach(([nome, servicos]) => {
-    linhas.push(`🏢 *${nomeEmpresa(nome)}* — ${brl(somar(servicos))}`);
-    linhas.push(...servicos.map(linhaCobranca), '');
+  agruparPorMes(lista).forEach(([mes, doMes]) => {
+    linhas.push(`📅 *Trabalho de ${nomeMes(mes)}* — ${brl(somar(doMes))}`, '');
+    agruparPorEmpresa(doMes).forEach(([nome, servicos]) => {
+      linhas.push(`🏢 *${nomeEmpresa(nome)}* — ${brl(somar(servicos))}`);
+      linhas.push(...servicos.map(linhaCobranca), '');
+    });
   });
 
   return linhas.join('\n').trim();

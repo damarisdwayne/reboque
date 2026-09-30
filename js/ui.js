@@ -25,6 +25,14 @@ function textoLembrete() {
 const vazio = (emoji, titulo, texto) =>
   `<div class="vazio"><span>${emoji}</span><h3>${titulo}</h3><p>${texto}</p></div>`;
 
+const blocoRecebidos = ([mes, servicos]) => `<section class="mes">
+    <header class="mes__topo">
+      <h2>Recebido em ${esc(nomeMes(mes))}</h2>
+      <strong>${brl(somar(servicos))}</strong>
+    </header>
+    <ul class="servicos servicos--solto">${servicos.map((s) => linhaServico(s, true)).join('')}</ul>
+  </section>`;
+
 function telaRecebidos() {
   const busca = ($('#buscaRecebidos')?.value || '').trim().toLocaleLowerCase('pt-BR');
   const lista = recebidos().filter((s) =>
@@ -32,7 +40,7 @@ function telaRecebidos() {
   return `
     <input type="search" id="buscaRecebidos" class="campo" placeholder="Procurar pela empresa" value="${esc(busca)}" />
     ${lista.length
-      ? `<ul class="servicos servicos--solto">${lista.map((s) => linhaServico(s, true)).join('')}</ul>`
+      ? agruparPorMes(lista, (s) => mesDe(s.recebidoEm)).reverse().map(blocoRecebidos).join('')
       : vazio('✅', busca ? 'Nenhuma empresa com esse nome' : 'Nada recebido ainda', 'Quando uma empresa pagar, toque em “recebi” e o serviço aparece aqui.')}`;
 }
 
@@ -101,17 +109,16 @@ const alternar = (chave) => {
 };
 
 const acoes = {
-  detalhar: ({ empresa }) => alternar(chaveEmpresa(empresa)),
-  cobrar: ({ empresa }) => compartilharTexto(textoCobranca(empresa, servicosDaEmpresa(empresa))),
+  detalhar: ({ empresa, mes }) => alternar(chaveEmpresa(mes, empresa)),
   receber: ({ id }) => { marcarRecebido([id], true); render(); avisar('Serviço marcado como recebido.'); },
   desfazer: ({ id }) => { marcarRecebido([id], false); render(); avisar('Voltou para “A receber”.'); },
-  'receber-tudo': ({ empresa }) => {
-    const lista = servicosDaEmpresa(empresa);
-    const total = `${lista.length} ${lista.length === 1 ? 'serviço' : 'serviços'}, ${brl(somar(lista))} ao todo`;
+  'receber-tudo': ({ empresa, mes }) => {
+    const lista = servicosDaEmpresa(empresa, mes);
+    const total = `${lista.length} ${lista.length === 1 ? 'serviço' : 'serviços'} de ${nomeMes(mes)}, ${brl(somar(lista))} ao todo`;
     if (!confirm(empresa ? `${empresa} pagou ${total}?` : `Recebeu ${total} sem empresa?`)) return;
     marcarRecebido(lista.map((s) => s.id), true);
     render();
-    avisar(empresa ? `Tudo de ${empresa} recebido.` : 'Serviços sem empresa recebidos.');
+    avisar(`${empresa || 'Serviços sem empresa'} · ${nomeMes(mes)} recebido.`);
   },
   excluir: ({ id }) => {
     const s = acharServico(id);

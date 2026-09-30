@@ -116,6 +116,18 @@ body {
 }
 
 
+/* ---------- meses ---------- */
+.mes { margin-bottom: 1.6rem; }
+.mes__topo {
+  display: flex; justify-content: space-between; align-items: flex-end; gap: .7rem;
+  margin: 0 .2rem .7rem;
+}
+.mes__topo h2 { margin: 0; font-size: 1.05rem; }
+.mes__topo strong { flex: none; font-size: 1.05rem; }
+.mes__etiqueta { margin: .1rem 0 0; font-size: .84rem; font-weight: 600; color: var(--tinta-fraca); }
+.mes--cobrar .mes__etiqueta { color: var(--ok); }
+.mes--atrasado .mes__etiqueta { color: var(--alerta); }
+
 /* ---------- cartões ---------- */
 .cartao {
   background: var(--papel); border: 1px solid var(--linha); border-radius: var(--raio);
@@ -125,7 +137,6 @@ body {
 .cartao__topo h3 { margin: 0; font-size: 1.15rem; }
 .cartao__sub { margin: .15rem 0 0; font-size: .86rem; color: var(--tinta-fraca); }
 .cartao__total { flex: none; font-size: 1.3rem; color: var(--marca); }
-.cartao__alerta { margin: .6rem 0 0; font-size: .88rem; font-weight: 600; color: var(--atencao); }
 
 .cartao__acoes { display: flex; gap: .6rem; margin-top: .9rem; flex-wrap: wrap; }
 

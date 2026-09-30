@@ -116,27 +116,62 @@ const aCobrar = () => DB.servicos.filter((s) => !s.recebidoEm).sort(porData);
 const recebidos = () =>
   DB.servicos.filter((s) => s.recebidoEm).sort((a, b) => porData(b, a));
 
-const doMes = (servicos, mes = hoje().slice(0, 7)) =>
-  servicos.filter((s) => s.data.slice(0, 7) === mes);
+const mesDe = (iso) => iso.slice(0, 7);
 
-function agruparPorEmpresa(servicos) {
+const mesAtual = () => mesDe(hoje());
+
+const somarMeses = (mes, n) => {
+  const [a, m] = mes.split('-').map(Number);
+  const d = new Date(a, m - 1 + n, 1);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+};
+
+const MESES_ATE_RECEBER = 1;
+
+const mesDeReceber = (mes) => somarMeses(mes, MESES_ATE_RECEBER);
+
+const nomeMes = (mes) => {
+  const [a, m] = mes.split('-').map(Number);
+  const nome = new Date(a, m - 1, 1).toLocaleDateString('pt-BR', { month: 'long' });
+  return a === Number(mesAtual().slice(0, 4)) ? nome : `${nome} de ${a}`;
+};
+
+const situacaoDoMes = (mes) => {
+  const receber = mesDeReceber(mes);
+  const agora = mesAtual();
+  if (receber > agora) return 'andamento';
+  return receber === agora ? 'cobrar' : 'atrasado';
+};
+
+const doMes = (servicos, mes = mesAtual()) =>
+  servicos.filter((s) => mesDe(s.data) === mes);
+
+const paraReceberAgora = (servicos) =>
+  servicos.filter((s) => situacaoDoMes(mesDe(s.data)) !== 'andamento');
+
+function agruparPor(servicos, chave) {
   const mapa = new Map();
   servicos.forEach((s) => {
-    const nome = empresaDe(s);
-    if (!mapa.has(nome)) mapa.set(nome, []);
-    mapa.get(nome).push(s);
+    const k = chave(s);
+    if (!mapa.has(k)) mapa.set(k, []);
+    mapa.get(k).push(s);
   });
-  return [...mapa.entries()]
-    .sort((a, b) => somar(b[1]) - somar(a[1]))
-    .sort((a, b) => (a[0] === '') - (b[0] === ''));
+  return [...mapa.entries()];
 }
 
-const servicosDaEmpresa = (nome) => aCobrar().filter((s) => empresaDe(s) === nome);
+const agruparPorMes = (servicos, chave = (s) => mesDe(s.data)) =>
+  agruparPor(servicos, chave).sort((a, b) => (a[0] < b[0] ? -1 : 1));
+
+const agruparPorEmpresa = (servicos) =>
+  agruparPor(servicos, empresaDe)
+    .sort((a, b) => somar(b[1]) - somar(a[1]))
+    .sort((a, b) => (a[0] === '') - (b[0] === ''));
+
+const servicosDaEmpresa = (nome, mes) =>
+  doMes(aCobrar(), mes).filter((s) => empresaDe(s) === nome);
 
 const tiposConhecidos = () =>
   [...new Set([...DB.servicos.map((s) => s.tipo), ...TIPOS_SUGERIDOS])];
-
-const nomeDoMes = () => new Date().toLocaleDateString('pt-BR', { month: 'long' });
 
 const DIAS_ATE_LEMBRAR = 30;
 
