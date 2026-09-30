@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="description" content="Anote os serviços de reboque: qual serviço, quando, quanto e para qual empresa." />
+  <title>Reboque</title>
+  <link rel="stylesheet" href="css/app.css" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <meta name="theme-color" content="#1f5a96" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Reboque" />
+  <link rel="icon" type="image/svg+xml" href="assets/icone.svg" />
+  <link rel="apple-touch-icon" href="assets/icone-180.png" />
+</head>
+<body>
+  <header class="topo">
+    <h1>Reboque</h1>
+    <p>Seus serviços e quem ainda falta pagar</p>
+  </header>
+
+  <main id="tela"></main>
+
+  <div id="aviso" role="status" aria-live="polite"></div>
+
+  <nav class="abas">
+    <button type="button" class="aba is-on" data-aba="cobrar"><span>💰</span>A receber</button>
+    <button type="button" class="aba" data-aba="novo"><span>➕</span>Novo serviço</button>
+    <button type="button" class="aba" data-aba="recebidos"><span>✅</span>Recebidos</button>
+    <button type="button" class="aba" data-aba="backup"><span>💾</span>Backup</button>
+  </nav>
+
+  <script src="js/db.js"></script>
+  <script src="js/novo.js"></script>
+  <script src="js/cobrar.js"></script>
+  <script src="js/compartilhar.js"></script>
+  <script src="js/export.js"></script>
+  <script src="js/ui.js"></script>
+</body>
+</html>
